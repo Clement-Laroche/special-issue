@@ -3,8 +3,16 @@ In this file you will find all the raw data that was used for the work presented
 Two files Analyses.csv and Stations.csv were extracted from http://www.naiades.eaufrance.fr/. All information about the extraction is available at :  
 http://www.naiades.eaufrance.fr/acces-donnees#/physicochimie/resultats?debut=09-01-2007&fin=08-09-2020&regions=24&parametres=1092&fractions=23&supports=3&qualifications=1.
 
-All the .zip archives contain the shapefiles of the hydrographic network of each department composing the Centre-Val de Loire french region. 
+All the .zip archives contain the shapefiles of the hydrographic network of each department composing the Centre-Val de Loire french region listed below : 
+- Cher (18)
+- Eure-et-Loir (28)
+- Indre (36)
+- Indre-et-Loire (37)
+- Loir-et-Cher (41)
+- Loiret (45)
 Those data were download from the platform : 
 https://geoservices.ign.fr/telechargement?bdd%5B0%5D=233&bdd%5B1%5D=233&date%5Bmin%5D=15/03/2022&date%5Bmax%5D=15/03/2022
+
+All of those datas are open sourced, please find the open-sourced license document reproduced in the open-license document.
 
 
