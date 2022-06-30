@@ -1,5 +1,5 @@
 # functions needed
-# sourceCpp("Code/PELT.cpp")
+sourceCpp("Code/PELT.cpp")
 
 # CROPS code
 CROPS_PELT <- function(y,beta_0,beta_1,init,q_init,k,min_seg)
