@@ -2,7 +2,7 @@
 
 All figures of the article can be reproduced using this code.
 
-Some steps can take a lot of computation time, please find all the intermediate results stored in .Rdata files in the folder Data.
+Some steps can take a lot of computation time, please find all the intermediate results stored in .Rdata files into the intermediate_step_results.zip archive.
 All functions coded to implement the procedure can be found in the Code folder.
 
 # INSTRUCTIONS
