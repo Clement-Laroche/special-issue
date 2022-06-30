@@ -205,7 +205,7 @@ ml1 <- lm(crops_weibull$cost[1:K_star]~K_l50[1:K_star])
 ml2 <- lm(crops_weibull$cost[K_star:length(K_l50)]~K_l50[K_star:length(K_l50)])
 g1 <- ggplot()+geom_point(aes(x = K_l50,y = crops_weibull$cost))+geom_abline(slope = ml1$coefficients[2],intercept = ml1$coefficients[1],col = "red")+geom_abline(slope = ml2$coefficients[2],intercept = ml2$coefficients[1],col = "red")+xlab("Number of breaks")+ylab("Cost of segmentation")
 d_break <- temp_break$d[crops_weibull$segments[[K_star]]]
-data_seg <- data[data$d > d_break[4] & data$d < d_break[5],]
+data_seg <- tab_res[tab_res$d > d_break[4] & tab_res$d < d_break[5],]
 g2 <- ggplot()+geom_point(aes(x = temp_break$d,y = temp_break$C,col = as.factor(temp_break$col==0)))+
   geom_rect(aes(xmin = temp_break$d[c(1,crops_weibull[[3]][[K_star]]+1)],xmax = temp_break$d[c(crops_weibull[[3]][[K_star]],nrow(temp_break))],ymin= -0.1,ymax = 3),col = "white",fill = "grey",alpha = 0.4)+
   xlab("Date")+ylab("Concentration (ug/L)")+labs(col='Quantification')+
