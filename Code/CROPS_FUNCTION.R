@@ -1,4 +1,5 @@
 # functions needed
+library(Rcpp)
 sourceCpp("Code/PELT.cpp")
 
 # CROPS code
