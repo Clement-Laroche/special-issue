@@ -3,6 +3,8 @@
 library(data.table)
 library(dplyr)
 library(ggplot2)
+library(patchwork)
+library(ggmap)   
 library(tidyr)
 library(udunits2)
 library(sf)
@@ -21,10 +23,10 @@ library(rPref)
 
 
 # table containing informations on stations 
-tab_sta <- read.csv2(file = "Data/Stations.csv")
+tab_sta <- read.csv2(file = "Data/Station.csv")
 
 # loading tab_res and checking the format
-tab_res <- read.csv2(file = "Data/Analyses.csv")
+tab_res <- read.csv2(file = "Data/Analyse.csv")
 tab_res <- as.data.table(tab_res)
 tab_res$DatePrel <- as.Date(tab_res$DatePrel)
 tab_res <- tab_res[order(tab_res$DatePrel)]
@@ -70,12 +72,12 @@ tab_res <- tab_res[,c("d","C","col","sta")]
 
 
 # hydrographic information
-map_dep1 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep2 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep3 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep4 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep5 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep6 <- st_read(dsn = "Data/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep1 <- st_read(dsn = "Data/Cher/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep2 <- st_read(dsn = "Data/Eure/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep3 <- st_read(dsn = "Data/Indre/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep4 <- st_read(dsn = "Data/IndreetLoir/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep5 <- st_read(dsn = "Data/Loiret/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep6 <- st_read(dsn = "Data/Loiretcher/TRONCON_HYDROGRAPHIQUE.shp")
 
 # extracting for each of the table the 
 # geographical points that are starting 
