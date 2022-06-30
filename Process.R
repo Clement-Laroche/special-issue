@@ -75,7 +75,7 @@ tab_res <- tab_res[,c("d","C","col","sta")]
 map_dep1 <- st_read(dsn = "Data/Cher/TRONCON_HYDROGRAPHIQUE.shp")
 map_dep2 <- st_read(dsn = "Data/Eure/TRONCON_HYDROGRAPHIQUE.shp")
 map_dep3 <- st_read(dsn = "Data/Indre/TRONCON_HYDROGRAPHIQUE.shp")
-map_dep4 <- st_read(dsn = "Data/IndreetLoir/TRONCON_HYDROGRAPHIQUE.shp")
+map_dep4 <- st_read(dsn = "Data/Indreetloire/TRONCON_HYDROGRAPHIQUE.shp")
 map_dep5 <- st_read(dsn = "Data/Loiret/TRONCON_HYDROGRAPHIQUE.shp")
 map_dep6 <- st_read(dsn = "Data/Loiretcher/TRONCON_HYDROGRAPHIQUE.shp")
 
