@@ -160,11 +160,11 @@ rm(map_dep1,map_dep2,map_dep3,map_dep4,map_dep5,map_dep6,remp,i)
 ################## Temporal segmentation ################
 #########################################################
 
-# necessary data for this step
-# load(file = "Code/Preprocessed_data.Rdata")
+# necessary data for this step, loaded from intermediate_step_results.zip
+# load(file = "Preprocessed_data.Rdata")
 
 # necessary functions for this step
-sourceCpp("Code/PELT.cpp")
+# sourceCpp("Code/PELT.cpp")
 source(file = "Code/CROPS_FUNCTION.R")
 
 # creating the daily maximum time series
@@ -187,12 +187,15 @@ b_1 <- log(nrow(temp_break))*3
 # CROPS results
 crops_weibull <- CROPS_PELT(y = temp_break[,2:3],beta_0 = b_0,beta_1 = b_1,init = "mle",q_init = 0.9, k = sigma,min_seg = 50)
 K_l50 <- unlist(lapply(crops_weibull$segments,FUN = "length"))
-crops_weibull$cost <- crops_weibull$cost[-which(duplicated(K_l50))]
-crops_weibull$beta <- crops_weibull$beta[-which(duplicated(K_l50))]
-crops_weibull$segments <- crops_weibull$segments[-which(duplicated(K_l50))]
-K_l50 <- K_l50[-which(duplicated(K_l50))]
+if(length(duplicated(K_l50))!=0)
+{
+  crops_weibull$cost <- crops_weibull$cost[-which(duplicated(K_l50))]
+  crops_weibull$beta <- crops_weibull$beta[-which(duplicated(K_l50))]
+  crops_weibull$segments <- crops_weibull$segments[-which(duplicated(K_l50))]
+  K_l50 <- K_l50[-which(duplicated(K_l50))]
+}
 
-# Choosing the optimal segmentations with the elbow method
+# Choosing the optimal segmentation with the elbow method
 slope <- rep(NA,length(K_l50)-2)
 for(i in 2:(length(K_l50)-1))
 {
@@ -201,20 +204,34 @@ for(i in 2:(length(K_l50)-1))
   slope[i-1] <- sum((ml1$residuals)^2)+sum((ml2$residuals)^2)
 }
 K_star <- (2:(length(K_l50)-1))[which.min(slope)]
-
-# illustration code 
-ml1 <- lm(crops_weibull$cost[1:K_star]~K_l50[1:K_star])
-ml2 <- lm(crops_weibull$cost[K_star:length(K_l50)]~K_l50[K_star:length(K_l50)])
-g1 <- ggplot()+geom_point(aes(x = K_l50,y = crops_weibull$cost))+geom_abline(slope = ml1$coefficients[2],intercept = ml1$coefficients[1],col = "red")+geom_abline(slope = ml2$coefficients[2],intercept = ml2$coefficients[1],col = "red")+xlab("Number of breaks")+ylab("Cost of segmentation")
 d_break <- temp_break$d[crops_weibull$segments[[K_star]]]
 data_seg <- tab_res[tab_res$d > d_break[4] & tab_res$d < d_break[5],]
-g2 <- ggplot()+geom_point(aes(x = temp_break$d,y = temp_break$C,col = as.factor(temp_break$col==0)))+
-  geom_rect(aes(xmin = temp_break$d[c(1,crops_weibull[[3]][[K_star]]+1)],xmax = temp_break$d[c(crops_weibull[[3]][[K_star]],nrow(temp_break))],ymin= -0.1,ymax = 3),col = "white",fill = "grey",alpha = 0.4)+
-  xlab("Date")+ylab("Concentration (ug/L)")+labs(col='Quantification')+
-  geom_rect(aes(xmin = temp_break$d[crops_weibull[[3]][[K_star]][4]]+1,xmax = temp_break$d[crops_weibull[[3]][[K_star]][5]]),ymin= -0.1,ymax = 3,col = "black",fill = "grey",alpha = 0.0)+
-  theme(legend.position="bottom",
-        legend.spacing.x = unit(0, units = 'in'))+
-  guides(fill = guide_legend(label.position = "bottom"))
+
+# output
+# save(crops_weibull,sigma,K_star,data_seg,file = "res_temp_break.Rdata")
+
+# Figure production
+## Figure 1
+# stor <- tab_res %>% group_by(sta) %>% summarize(n = n()) 
+# g <- ggplot()+geom_histogram(data = stor,aes(x = n),col = "black",fill = "white")+xlab("Number of data collected")+ylab("Number of stations")
+## Figure 2
+# g <- ggplot()+geom_point(aes(x = temp_break$d,y = temp_break$C,col = as.factor(temp_break$col==0)))+
+#  xlab("Date")+ylab("Concentration (ug/L)")+labs(col='Quantification')+
+#  theme(legend.position="bottom",
+#        legend.spacing.x = unit(0, units = 'in'))+
+#  guides(fill = guide_legend(label.position = "bottom"))
+## Figure 11
+# ml1 <- lm(crops_weibull$cost[1:K_star]~K_l50[1:K_star])
+# ml2 <- lm(crops_weibull$cost[K_star:length(K_l50)]~K_l50[K_star:length(K_l50)])
+# g <- ggplot()+geom_point(aes(x = K_l50,y = crops_weibull$cost))+geom_abline(slope = ml1$coefficients[2],intercept = ml1$coefficients[1],col = "red")+geom_abline(slope = ml2$coefficients[2],intercept = ml2$coefficients[1],col = "red")+xlab("Number of breaks")+ylab("Cost of segmentation")
+## Figure 4
+# g <- ggplot()+geom_point(aes(x = temp_break$d,y = temp_break$C,col = as.factor(temp_break$col==0)))+
+#  geom_rect(aes(xmin = temp_break$d[c(1,crops_weibull[[3]][[K_star]]+1)],xmax = temp_break$d[c(crops_weibull[[3]][[K_star]],nrow(temp_break))],ymin= -0.1,ymax = 3),col = "white",fill = "grey",alpha = 0.4)+
+#  xlab("Date")+ylab("Concentration (ug/L)")+labs(col='Quantification')+
+#  geom_rect(aes(xmin = temp_break$d[crops_weibull[[3]][[K_star]][4]]+1,xmax = temp_break$d[crops_weibull[[3]][[K_star]][5]]),ymin= -0.1,ymax = 3,col = "black",fill = "grey",alpha = 0.0)+
+#  theme(legend.position="bottom",
+#        legend.spacing.x = unit(0, units = 'in'))+
+#  guides(fill = guide_legend(label.position = "bottom"))
 
 # output
 # save(crops_weibull,sigma,K_star,file = "res_temp_break.Rdata")
