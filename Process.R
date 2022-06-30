@@ -23,10 +23,10 @@ library(rPref)
 
 
 # table containing informations on stations 
-tab_sta <- read.csv2(file = "Data/Station.csv")
+tab_sta <- read.csv2(file = "Data/Station.CSV")
 
 # loading tab_res and checking the format
-tab_res <- read.csv2(file = "Data/Analyse.csv")
+tab_res <- read.csv2(file = "Data/Analyse.CSV")
 tab_res <- as.data.table(tab_res)
 tab_res$DatePrel <- as.Date(tab_res$DatePrel)
 tab_res <- tab_res[order(tab_res$DatePrel)]
@@ -38,8 +38,8 @@ tab_sta$LbRegion <- as.character(tab_sta$LbRegion)
 unique(tab_sta$LbRegion)
 region <- "CENTRE-VAL DE LOIRE" 
 station <- which(tab_sta$LbRegion == region)
-station <- tab_sta$ï..CdStationMesureEauxSurface[station]
-pos <- which(tab_res$ï..CdStationMesureEauxSurface %in% station)
+station <- tab_sta$CdStationMesureEauxSurface[station]
+pos <- which(tab_res$CdStationMesureEauxSurface %in% station)
 tab_res <- tab_res[pos,]
 tab_sta <- tab_sta[which(tab_sta$LbRegion == region),]
 rm(pos,region,station)
@@ -55,13 +55,13 @@ if(any(tab_res$RsAna==0))
 }
 
 # keeping informative column
-tab_res <- tab_res %>% select(c("DatePrel","RsAna","SymUniteMesure","MnemoRqAna","ï..CdStationMesureEauxSurface"))
+tab_res <- tab_res[,c("DatePrel","RsAna","SymUniteMesure","MnemoRqAna","CdStationMesureEauxSurface")]
 
 # creating the column of quantification
 tab_res$col <- FALSE
 # names(table(tab_res$MnemoRqAna))
-tab_res$col[tab_res$MnemoRqAna == "RÃ©sultat < au seuil de quantification"] <- TRUE
-tab_res$col[tab_res$MnemoRqAna == "RÃ©sultat < seuil de dÃ©tection"] <- TRUE
+tab_res$col[tab_res$MnemoRqAna == "Résultat < au seuil de quantification"] <- TRUE
+tab_res$col[tab_res$MnemoRqAna == "Résultat < seuil de détection"] <- TRUE
 # ggplot()+geom_point(tab_res = tab_res,
 #                     aes(x = DatePrel,y = RsAna,col = (col==FALSE)))+
 #          scale_color_discrete("Quantification")+xlab("Date")+ylab("Concentrations (µg/L)")
@@ -82,7 +82,6 @@ map_dep6 <- st_read(dsn = "Data/Loiretcher/TRONCON_HYDROGRAPHIQUE.shp")
 # extracting for each of the table the 
 # geographical points that are starting 
 # and ending the hydrographical segments
-
 
 map_dep1$SEG_DEB <- NA
 map_dep1$SEG_FIN <- NA
@@ -195,7 +194,7 @@ if(length(duplicated(K_l50))!=0)
   K_l50 <- K_l50[-which(duplicated(K_l50))]
 }
 
-# Choosing the optimal segmentation with the elbow method
+# Choosing the optimal segmentations with the elbow method
 slope <- rep(NA,length(K_l50)-2)
 for(i in 2:(length(K_l50)-1))
 {
@@ -204,6 +203,10 @@ for(i in 2:(length(K_l50)-1))
   slope[i-1] <- sum((ml1$residuals)^2)+sum((ml2$residuals)^2)
 }
 K_star <- (2:(length(K_l50)-1))[which.min(slope)]
+
+# illustration code 
+ml1 <- lm(crops_weibull$cost[1:K_star]~K_l50[1:K_star])
+ml2 <- lm(crops_weibull$cost[K_star:length(K_l50)]~K_l50[K_star:length(K_l50)])
 d_break <- temp_break$d[crops_weibull$segments[[K_star]]]
 data_seg <- tab_res[tab_res$d > d_break[4] & tab_res$d < d_break[5],]
 
@@ -221,8 +224,6 @@ data_seg <- tab_res[tab_res$d > d_break[4] & tab_res$d < d_break[5],]
 #        legend.spacing.x = unit(0, units = 'in'))+
 #  guides(fill = guide_legend(label.position = "bottom"))
 ## Figure 11
-# ml1 <- lm(crops_weibull$cost[1:K_star]~K_l50[1:K_star])
-# ml2 <- lm(crops_weibull$cost[K_star:length(K_l50)]~K_l50[K_star:length(K_l50)])
 # g <- ggplot()+geom_point(aes(x = K_l50,y = crops_weibull$cost))+geom_abline(slope = ml1$coefficients[2],intercept = ml1$coefficients[1],col = "red")+geom_abline(slope = ml2$coefficients[2],intercept = ml2$coefficients[1],col = "red")+xlab("Number of breaks")+ylab("Cost of segmentation")
 ## Figure 4
 # g <- ggplot()+geom_point(aes(x = temp_break$d,y = temp_break$C,col = as.factor(temp_break$col==0)))+
@@ -233,14 +234,11 @@ data_seg <- tab_res[tab_res$d > d_break[4] & tab_res$d < d_break[5],]
 #        legend.spacing.x = unit(0, units = 'in'))+
 #  guides(fill = guide_legend(label.position = "bottom"))
 
-# output
-# save(crops_weibull,sigma,K_star,file = "res_temp_break.Rdata")
-
 #########################################################
 ################## Spatial Clustering ###################
 #########################################################
 
-# necessary data for this step
+# necessary data for this step, loaded from intermediate_step_results.zip
 # load(file = "Preprocessed_data.Rdata")
 # load(file = "res_temp_break.Rdata")
 
@@ -257,7 +255,7 @@ map_dep$SEG_FIN <- st_zm(map_dep$SEG_FIN)
 sta <- unique(tab_res$sta[tab_res$d >= temp_break$d[crops_weibull$segments[[K_star]]][4] & tab_res$d <= temp_break$d[crops_weibull$segments[[K_star]]][5]])
 # creating a table with correct projection of
 # the stations coordinates
-sta_crs_o <- tab_sta[tab_sta$ï..CdStationMesureEauxSurface %in% sta,]
+sta_crs_o <- tab_sta[tab_sta$CdStationMesureEauxSurface %in% sta,]
 sta_crs_o <- st_as_sf(x = sta_crs_o, 
                       coords = c("CoordXStationMesureEauxSurface", "CoordYStationMesureEauxSurface"),
                       crs = 2154)
@@ -358,8 +356,8 @@ M_dist[is.na(M_dist)] <- 0
 M_dist[M_dist == 0] <- NA
 diag(M_dist) <- 0
 M_dist <- as.data.frame(M_dist)
-colnames(M_dist) <- sta_crs_o$ï..CdStationMesureEauxSurface
-row.names(M_dist) <- sta_crs_o$ï..CdStationMesureEauxSurface
+colnames(M_dist) <- sta_crs_o$CdStationMesureEauxSurface
+row.names(M_dist) <- sta_crs_o$CdStationMesureEauxSurface
 
 # creating the station graph defined as follows :
 #              - nodes = stations
@@ -454,18 +452,53 @@ part_arg <- list.rbind(part_arg)
 new_clust <- as.numeric(as.factor(paste(part_arg[,1],part_arg[,2],sep = "")))
 names(new_clust) <- row.names(part_arg)
 # assigning stations to their clusters
-sta_crs_o$clust <- new_clust[match(sta_crs_o$ï..CdStationMesureEauxSurface,names(new_clust))]
-sta_crs_o$clust[which(is.na(sta_crs_o$clust))] <- max(new_clust)+1
-clust_results <- sta_crs_o[,c("ï..CdStationMesureEauxSurface","clust")]
+sta_crs_o$clust <- new_clust[match(sta_crs_o$CdStationMesureEauxSurface,names(new_clust))]
+sta_crs_o$clust[which(is.na(sta_crs_o$clust))] <- max(new_clust)+1:length(which(is.na(sta_crs_o$clust)))
+clust_results <- sta_crs_o[,c("CdStationMesureEauxSurface","clust")]
 
 # output
-# save(clust_results,file = "clust_results.Rdata")
+# save(clust_results,sta_crs_o,file = "clust_results.Rdata")
+
+# Figure production
+## Figure 12
+# g <- ggplot() + geom_point(aes(x = elb$V2,y = elb$SCORE_FUN))+geom_abline(intercept = ml1$coefficients[1],slope = ml1$coefficients[2],col = "red")+geom_abline(intercept = ml2$coefficients[1],slope = ml2$coefficients[2],col = "red")+xlab("Number of clusters")+ylab("Total inertia")
+## Figure 3
+# load("Data/Vdl_HER.Rdata")
+# xmin <- min(st_coordinates(map_reg)[,1])
+# xmax <- max(st_coordinates(map_reg)[,1])
+# ymin <- min(st_coordinates(map_reg)[,2])
+# ymax <- max(st_coordinates(map_reg)[,2])
+# g <- ggmap(ggmap = get_map(c(xmin,ymin,xmax,ymax)))
+# g <- g+geom_sf(data = map_reg,inherit.aes = FALSE,alpha = 0)
+# sta_crs_o <- st_transform(sta_crs_o,4326)
+# gmap <- g+geom_point(data = sta_crs_o,
+# aes(x = as.numeric(st_coordinates(geometry)[,1]), 
+#     y = as.numeric(st_coordinates(geometry)[,2]), 
+#     fill = comp),
+# size = 2,col = "black",pch=21,inherit.aes = FALSE)+theme(legend.position="bottom",
+#                                                          legend.spacing.x = unit(0, units = 'in'),
+#                                                          legend.title = element_text(size=8), 
+#                                                          legend.text = element_text(size=8),
+#                                                          legend.box.margin=margin(-10,-10,-10,-10))+
+#   guides(fill = guide_legend(label.position = "bottom"))+
+#   scale_fill_discrete(name = "Graph components")
+## Figure 5
+# gmap <- g+geom_point(data = sta_crs_o,
+# aes(x = as.numeric(st_coordinates(geometry)[,1]),
+#     y = as.numeric(st_coordinates(geometry)[,2]),
+#     fill = as.factor(clust)),
+# size = 2,col = "black",pch=21,inherit.aes = FALSE)+theme(legend.position="bottom",
+#                                                          legend.spacing.x = unit(0, units = 'in'),
+#                                                          legend.title = element_text(size=8),
+#                                                          legend.text = element_text(size=8),
+#                                                          legend.box.margin=margin(-10,-10,-10,-10))+
+#   guides(fill = guide_legend(label.position = "bottom"))+
+#   scale_fill_discrete(name = "Clusters")
 
 #########################################################
 ################## Anomaly Detection ####################
 #########################################################
 
-# necessary data for this step
 # load(file = "Preprocessed_data.Rdata")
 # load(file = "res_temp_break.Rdata")
 # load(file = "clust_results.Rdata")
@@ -482,7 +515,7 @@ C_MAT <- as.list(rep(NA,max(clust_results$clust)))
 for(k in 1:max(clust_results$clust))
 {
   pos <- which(clust_results$clust == k)
-  sta <- clust_results$ï..CdStationMesureEauxSurface[pos]
+  sta <- clust_results$CdStationMesureEauxSurface[pos]
   mat_c <- matrix(NA,nc = length(sta),nr = length(sta))
   for(i in 1:nrow(mat_c))
   {
@@ -517,14 +550,30 @@ for(i in 1:nrow(cluster_info))
   cluster_info$ord[i] <- ord
 }
 cluster_info$ord <- 1/cluster_info$ord
+cluster_info$abs[cluster_info$abs < 10^-16] <- 0
+cluster_info$ord[cluster_info$ord < 10^-5] <- 0
 
 # anomaly detection through multicriterion optimisation
 p <- high(cluster_info$abs) * high(cluster_info$ord) 
 res_anomaly <- psel(cluster_info, p, top = nrow(cluster_info))
 res_anomaly$.level <- as.factor(res_anomaly$.level)
 
-# plot of the Pareto front
-g <- ggplot(data = res_anomaly)+geom_point(aes(x = abs,y = ord,col = .level))
-
 # output
-# save(res_anomaly,"res_anom.Rdata")
+# save(res_anomaly,file = "res_anom.Rdata")
+
+# Figure production
+## Figure 6
+# g1 <- ggplot(data = res_anomaly)+geom_point(aes(x = abs,y = ord,col = .level))
+## Figure 7
+# sta_crs_o$level <- res_anomaly$.level[match(sta_crs_o$clust,res_anomaly$cluster)]
+# gmap <- g + geom_point(data = sta_crs_o,
+# aes(x = as.numeric(st_coordinates(geometry)[,1]),
+#     y = as.numeric(st_coordinates(geometry)[,2]),
+#     fill = as.factor(level)),
+# size = 2,col = "black",pch=21,inherit.aes = FALSE)+theme(legend.position="bottom",
+#                                                          legend.spacing.x = unit(0, units = 'in'),
+#                                                          legend.title = element_text(size=8),
+#                                                          legend.text = element_text(size=8),
+#                                                          legend.box.margin=margin(-10,-10,-10,-10))+
+#   guides(fill = guide_legend(label.position = "bottom"))+
+#   scale_fill_discrete(name = "Clusters")
